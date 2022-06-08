@@ -1,15 +1,22 @@
 const express = require('express');
 const cors = require('cors');
-const cartController = require('./controllers/cartController');
+const {
+  postCartController,
+  getCartController,
+  getCartItemCount,
+} = require('./controllers/cartController');
 const getProductsController = require('./controllers/getProductsController');
+const { PORT } = require('./config');
 const app = express();
-const port = 4000;
 
 app.use(cors());
+app.use(express.json());
 
 app.get('/products', getProductsController);
-app.get('/cart', cartController);
+app.post('/cartItems', postCartController);
+app.get('/cartItems', getCartController);
+app.get('/cartItemCount', getCartItemCount);
 
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}`);
 });
