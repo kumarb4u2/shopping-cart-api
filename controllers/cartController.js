@@ -7,18 +7,25 @@ const postCartController = async (req, res) => {
   let response;
   try {
     const existingItem = await axios.get(`${DB_BASE_URL}cartItems/${id}`);
-    if (existingItem.data) {
+    if (existingItem && existingItem.data) {
       req.body.quantity = existingItem.data.quantity + 1;
-      response = await axios.put(`${DB_BASE_URL}cartItems/${id}`, req.body);
-    } else {
-      req.body.quantity = 1;
-      response = await axios.post(`${DB_BASE_URL}cartItems`, req.body);
+      try {
+        response = await axios.put(`${DB_BASE_URL}cartItems/${id}`, req.body);
+        res.json(response.data);
+      } catch (error) {
+        res.send('Something went wrong');
+      }
     }
   } catch (error) {
-    console.error(error);
-    res.send('Something went wrong');
+    req.body.quantity = 1;
+    console.log(req.body);
+    try {
+      await axios.post(`${DB_BASE_URL}cartItems`, req.body);
+      res.json({ id });
+    } catch (error) {
+      res.send('Something went wrong');
+    }
   }
-  res.json(response.data);
 };
 
 const getCartController = async (req, res) => {
@@ -26,9 +33,7 @@ const getCartController = async (req, res) => {
   try {
     response = await axios.get(`${DB_BASE_URL}cartItems`);
     const cartTotal = response.data.reduce((prev, next) => {
-      console.log(prev, next);
       prev += next.quantity * next.price * (1 - next.discountPercentage / 100);
-      console.log(prev);
       return prev;
     }, 0);
     res.json({
