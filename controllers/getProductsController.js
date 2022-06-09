@@ -3,10 +3,16 @@ const { DB_BASE_URL } = require('../config');
 const { discountCalculator } = require('../utils/priceUtils');
 
 const getProductsController = async (req, res) => {
-  let products;
+  const { page, size } = req.query;
+  let response;
   try {
-    products = await axios.get(`${DB_BASE_URL}products`);
-    res.json(products.data.map((item) => discountCalculator(item)));
+    response = await axios.get(
+      `${DB_BASE_URL}products?_page=${page}&_limit=${size}`
+    );
+    res.json({
+      items: response.data.map((item) => discountCalculator(item)),
+      totalCount: response.headers['x-total-count'],
+    });
   } catch (error) {
     console.error(error);
     res.send('Something went wrong');
